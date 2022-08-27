@@ -1,53 +1,49 @@
-import {updateUser} from "../../utils/backend";
-import {showMessage} from "../../utils/util";
-
-const app = getApp()
+import * as backend from "../../utils/backend";
+import * as util from "../../utils/util";
 
 Page({
-  data: {
-    userInfo: {},
-    hasUserInfo: false,
-    canIUse: wx.canIUse('button.open-type.getUserInfo'),
-    canIUseGetUserProfile: false
-  },
+  data: {},
   onLoad() {
-    if (wx.getUserProfile) {
-      this.setData({
-        canIUseGetUserProfile: true
-      });
-    }
   },
-  getUserProfile(e) {
-    wx.getUserProfile({
-      desc: '展示用户信息',
-      success: (res) => {
-        this.setData({
-          userInfo: res.userInfo,
-          hasUserInfo: true
-        });
-      }
+  login() {
+    this.wrapWxLoginAsPromise()
+      .then(res => {
+        if (res.code) {
+          return res.code;
+        } else {
+          return Promise.reject(res);
+        }
+      })
+      .then(backend.getAccessToken)
+      .then(res => {
+        if (res.data.error) {
+          const message = `[${res.data.error}] ${res.data.error_description}`;
+          return Promise.reject(new Error(message));
+        } else {
+          return res.data.access_token;
+        }
+      })
+      .then(this.saveAccessTokenAndRedirectToUserinfoPage)
+      .catch(util.handleError);
+  },
+  wrapWxLoginAsPromise() {
+    return new Promise((resolve, reject) => {
+      wx.login({
+        timeout: 2000,
+        success: res => {
+          resolve(res);
+        },
+        fail: err => {
+          reject(err);
+        }
+      })
     });
   },
-  getUserInfo(e) {
-    this.setData({
-      userInfo: e.detail.userInfo,
-      hasUserInfo: true
-    });
-  },
-  updateUserProfile(e) {
-    updateUser(
-      app.globalData.accessToken, 
-      this.data.userInfo.nickName, 
-      this.data.userInfo.avatarUrl
-    ).then(res => {
-      const data = res.data;
-      if (data.status === "error") {
-        showMessage("none", data.msg);
-      } else {
-        showMessage("success", "更新成功");
-      }
-    }).catch(err => {
-      showMessage("error", err.errMsg);
-    });
+  saveAccessTokenAndRedirectToUserinfoPage(accessToken) {
+    return util.setStorage("accessToken", accessToken)
+      .then(() => util.showMessage("success", "登录成功", 1500, true))
+      .finally(() => wx.redirectTo({
+        url: "/pages/userinfo/userinfo"
+      }));
   }
 })

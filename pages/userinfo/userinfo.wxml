@@ -1,0 +1,71 @@
+<view class="box">
+  <block wx:if="{{account !== undefined}}">
+    <form bindsubmit="updateUserinfo">
+      <view class="row">
+        <image class="avatar" src="{{account.avatar}}" />
+      </view>
+      <view class="row">
+        <view class="item-left">
+          <label for="id">ID: </label>
+        </view>
+        <view class="item-right">
+          <input class="disabled" name="id" value="{{account.id}}" disabled />
+        </view>
+      </view>
+      <view class="row">
+        <view class="item-left">
+          <label for="name">名称: </label>
+        </view>
+        <view class="item-right">
+          <input class="disabled" name="name" value="{{account.name}}" disabled />
+        </view>
+      </view>
+      <view class="row">
+        <view class="item-left">
+          <label for="displayName">显示名称: </label>
+        </view>
+        <view class="item-right">
+          <input name="displayName" value="{{account.displayName}}" />
+        </view>
+      </view>
+      <view class="row">
+        <view class="item-left">
+          <label for="avatar">头像链接: </label>
+        </view>
+        <view class="item-right">
+          <input name="avatar" value="{{account.avatar}}" />
+        </view>
+      </view>
+      <view class="row">
+        <view class="item-left">
+          <label for="email">邮箱: </label>
+        </view>
+        <view class="item-right">
+          <input name="email" value="{{account.email}}" />
+        </view>
+      </view>
+      <view class="row">
+        <view class="item-left">
+          <label for="phone">手机号: </label>
+        </view>
+        <view class="item-right">
+          <input name="phone" value="{{account.phone}}" maxlength="11" />
+        </view>
+      </view>
+      <view class="row">
+        <view class="item-left">
+          <label for="password">密码: </label>
+        </view>
+        <view class="item-right">
+          <input name="password" value="{{account.password}}" password="true" />
+        </view>
+      </view>
+      <view class="row">
+        <button size="mini" form-type="submit">更新用户信息</button>
+      </view>
+      <view class="row">
+        <button bindtap="logout" size="mini">退出登录</button>
+      </view>
+    </form>
+  </block>
+</view>

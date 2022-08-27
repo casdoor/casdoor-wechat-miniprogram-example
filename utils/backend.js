@@ -1,9 +1,10 @@
-import {request} from "./util";
+import {
+  request
+} from "./util";
 
 const CasdoorConfig = {
   endpoint: "http://localhost:8000",
-  clientId: "",
-  clientSecret: ""
+  clientId: ""
 }
 
 const getAccessToken = (code) => {
@@ -16,28 +17,35 @@ const getAccessToken = (code) => {
     data: {
       "tag": "wechat_miniprogram",
       "client_id": CasdoorConfig.clientId,
-      "client_secret": CasdoorConfig.clientSecret,
       "code": code
     }
   });
 };
 
-const updateUser = (accessToken, nickName, avatarUrl) => {
+const updateUserinfo = (accessToken, data) => {
   return request({
-    url: `${CasdoorConfig.endpoint}/api/update-user?columns=display_name,avatar`,
+    url: `${CasdoorConfig.endpoint}/api/update-user?columns=display_name,avatar,email,phone,password`,
     method: "POST",
     header: {
       "Authorization": `Bearer ${accessToken}`,
       "Content-Type": "application/json"
     },
-    data: {
-      "displayName": nickName,
-      "avatar": avatarUrl
-    }
+    data: data
   });
 };
 
+const getAccount = (accessToken) => {
+  return request({
+    url: `${CasdoorConfig.endpoint}/api/get-account`,
+    method: "GET",
+    header: {
+      "Authorization": `Bearer ${accessToken}`
+    }
+  });
+}
+
 module.exports = {
   getAccessToken,
-  updateUser
+  updateUserinfo,
+  getAccount
 };

@@ -41,7 +41,7 @@
   },
   "compileType": "miniprogram",
   "libVersion": "2.0.4",
-  "appid": "wx980f1b9c61ffcc1a",
+  "appid": "your app id",
   "projectname": "casdoor-wechat-miniprogram-example",
   "debugOptions": {
     "hidedInDevtools": []

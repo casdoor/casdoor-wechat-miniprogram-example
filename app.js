@@ -1,17 +1,15 @@
-import {getAccessToken} from "./utils/backend";
+import * as util from "./utils/util";
 
 App({
   onLaunch() {
-    wx.login({
-      success: res => {
-        getAccessToken(res.code)
-          .then(res => {
-            this.globalData.accessToken = res.data.access_token;
+    util.getStorage("accessToken")
+      .then(res => {
+        if (res.data) {
+          wx.redirectTo({
+            url: "/pages/userinfo/userinfo",
           });
-      }
-    });
+        }
+      });
   },
-  globalData: {
-    accessToken: ""
-  }
+  globalData: {}
 });

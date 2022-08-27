@@ -12,3 +12,7 @@
   margin: 20rpx;
   border-radius: 50%;
 }
+
+.container > button {
+  margin: auto;
+}
