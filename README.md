@@ -1,5 +1,7 @@
 # casdoor-wechat-miniprogram-example
 
+See complete docs at: https://casdoor.org/docs/integration/wechat_miniprogram
+
 ## Init example
 
 First, You need to init requires 3 parameters, which are all string type:
