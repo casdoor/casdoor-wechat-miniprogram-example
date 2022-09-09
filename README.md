@@ -1,5 +1,7 @@
 # casdoor-wechat-miniprogram-example
 
+See complete docs at: https://casdoor.org/docs/integration/wechat_miniprogram
+
 [![LICENSE](https://img.shields.io/github/license/casdoor/casdoor-wechat-miniprogram-example)](https://github.com/casdoor/casdoor-wechat-miniprogram-example/blob/master/LICENSE)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/casbin/casdoor)
 
