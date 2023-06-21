@@ -3,8 +3,8 @@ import {
 } from "./util";
 
 const CasdoorConfig = {
-  endpoint: "http://localhost:8000",
-  clientId: ""
+  endpoint: "https://door.casdoor.com",
+  clientId: "294b09fbc17f95daf2fe"
 }
 
 const getAccessToken = (code) => {
