@@ -1,131 +1,70 @@
-# casdoor-wechat-miniprogram-example
+# Casdoor WeChat Mini Program Example
 
-See complete docs at: https://casdoor.org/docs/integration/javascript/wechat_miniprogram
-
-[![LICENSE](https://img.shields.io/github/license/casdoor/casdoor-wechat-miniprogram-example)](https://github.com/casdoor/casdoor-wechat-miniprogram-example/blob/master/LICENSE)
+[![Build](https://github.com/casdoor/casdoor-wechat-miniprogram-example/actions/workflows/build.yml/badge.svg)](https://github.com/casdoor/casdoor-wechat-miniprogram-example/actions/workflows/build.yml)
+[![License](https://img.shields.io/github/license/casdoor/casdoor-wechat-miniprogram-example)](https://github.com/casdoor/casdoor-wechat-miniprogram-example/blob/master/LICENSE)
 [![Discord](https://img.shields.io/discord/1022748306096537660?logo=discord&label=discord&color=5865F2)](https://discord.gg/5rPsrAzK7S)
 
->Casdoor supports WeChat Mini Program after version 1.41.0
+An example [WeChat Mini Program](https://developers.weixin.qq.com/miniprogram/dev/framework/) that signs users in with [Casdoor](https://casdoor.ai/), and shows and edits the user's profile. Complete docs: [Casdoor: WeChat Mini Program](https://casdoor.ai/docs/integration/javascript/wechat_miniprogram/).
 
-## Introduction
+## How it works
 
-Since WeChat Mini Program do not support standardized OAuth, it cannot jump to the self-host Casdoor webpage for login.
-Therefore, the process of using Casdoor for WeChat Mini Program is different from that of ordinary programs.
+A mini program can't open the Casdoor sign-in page, so it signs in with the WeChat account instead ([WeChat login](https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/login.html)):
 
-This document will talk about how to access Casdoor to WeChat Mini Program. More detailed information can be found in 
-the WeChat Mini Program [login document](https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/login.html).
+1. **Casdoor登录** calls `wx.login()` and gets a one-time code from WeChat ([pages/index/index.js](pages/index/index.js)).
+2. The code goes to Casdoor's token endpoint with `tag=wechat_miniprogram` ([utils/backend.js](utils/backend.js)):
 
-## What you need
+   ```js
+   wx.request({
+     url: `${endpoint}/api/login/oauth/access_token`,
+     method: "POST",
+     header: {"Content-Type": "application/x-www-form-urlencoded"},
+     data: {
+       tag: "wechat_miniprogram", // required: the code comes from a WeChat Mini Program
+       client_id: clientId,
+       code: res.code,
+     },
+   })
+   ```
 
-### Deploy the Casdoor.
+3. Casdoor exchanges the code with WeChat for the user's OpenID, signs the user in (creating the user the first time) and returns a Casdoor access token. The mini program keeps it in storage.
+4. [The user page](pages/userinfo/userinfo.js) calls Casdoor's APIs with `Authorization: Bearer <access token>`: `GET /api/get-account` to show the user and `POST /api/update-user` to edit the display name, avatar, email and phone. **退出登录** ends the Casdoor session (`/api/logout`) and removes the token.
 
-You can refer to the Casdoor official documentation for the [install guide](https://casdoor.org/docs/basic/server-installation). Please deploy your Casdoor instance in **production mode**.
+## Prerequisites
 
-After a successful deployment, you need to ensure:
+- [WeChat DevTools](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)
+- A WeChat Mini Program, with its AppID and AppSecret from the [WeChat Official Accounts Platform](https://mp.weixin.qq.com/)
+- A Casdoor server (1.41.0 or later) reachable over HTTPS, see [Casdoor installation](https://casdoor.ai/docs/basic/server-installation). The demo server https://door.casdoor.com doesn't have your mini program, so use your own Casdoor.
 
-- Open your favorite browser and visit **http://localhost:8000**, you will see the login page of Casdoor.
-- Input `admin` and `123` to test login functionality is working fine.
+## Configuration
 
-### Configure Casdoor application
+1. In Casdoor, add a **WeChat** provider with the AppID and AppSecret of the mini program.
+2. Create (or reuse) an application and add the provider to it. Casdoor uses the first WeChat provider of the application for mini programs, so add only one.
+3. Fill in [utils/backend.js](utils/backend.js):
 
-1. Create a **wechat idp** in casdoor and fill your `APPID` and `APPSECRET` given to you by WeChat Mini Program develop platform.
-2. Create or use an existing Casdoor application.
-3. Add the idp added above to the **application** you want to use.
+   | Name       | Description                  |
+   |------------|------------------------------|
+   | `endpoint` | Casdoor server URL           |
+   | `clientId` | Client ID of the application |
 
->For convenience, casdoor will read the first WeChat type idp in the application as the WeChat Mini Program idp by default.
->So if you want to use the WeChat Mini Program in this app, don't add multiple WeChat type idp in one app.
+4. Put the AppID of the mini program in `appid` of [project.config.json](project.config.json).
+5. In the mini program's settings on the WeChat platform, add the Casdoor server to the **request legal domains** (request合法域名). In WeChat DevTools you can skip this while developing with "不校验合法域名".
 
-## Run the example
+Editing the profile needs the users of the organization to be allowed to update their own profile in Casdoor.
 
-### Step1. Download the code
+## Run
 
-```
-git clone https://github.com/casdoor/casdoor-wechat-miniprogram-example.git
-```
-
-- Open this example in your [wechat devtools](https://developers.weixin.qq.com/miniprogram/en/dev/devtools/download.html).
-
-> The `updateUserinfo` function of the `userinfo` page needs to open the corresponding permission in Casdoor.
-
-### Step2. Init example
-
-First, You need to init requires 2 parameters, which are all string type:
-
-| Name         | Description                                                                                             | File                  |
-| ------------ | ------------------------------------------------------------------------------------------------------- | --------------------- |
-| `endpoint`   | Your Casdoor server host/domain                                                                         | `/utils/backend.js` |
-| `clientID`   | The Client ID of your Casdoor application                                                               | `/utils/backend.js` |
-
-Then, configure the `appid` of the `project.config.json` file.
-
-## Step3. Write WeChat MiniProgram code
-
-WeChat Mini Program provides an API to login internally and get the Code, all you need to do is to send this Code to Casdoor,
-Casdoor will use this Code to get some information from WeChat server (such as OpenID, SessionKey, etc.).
-
-The following code shows how to accomplish the above process:
-
-```js
-// login in mini program
-wx.login({
-  success: res => {
-    // this is your login code you need to send to casdoor
-    console.log(res.code)
-    
-    wx.request({
-      url: `${CASDOOR_HOSTNAME}/api/login/oauth/access_token`,
-      method: "POST",
-      data: {
-        "tag": "wechat_miniprogram", // required
-        "client_id": "6825f4f0af45554c8952",
-        "code": res.code,
-        "username": this.data.userInfo.nickName, // update user profile, when you login.
-        "avatar": this.data.userInfo.avatarUrl,
-      },
-      header:{
-        "content-type": "application/x-www-form-urlencoded",
-      },
-      success: res => {
-        console.log(res)
-        this.globalData.accessToken = res.data.access_token // get casdoor's accessToken
-      }
-    })
-  }
-})
+```shell
+git clone https://github.com/casdoor/casdoor-wechat-miniprogram-example
 ```
 
-It is worth mentioning that the `tag` parameter is mandatory and you need to make casdoor understand that this is a request from the WeChat Mini Program.
+Open the folder in WeChat DevTools, then tap **Casdoor登录** in the simulator or on a phone (preview).
 
-The above code passes in the username and avatar uri of the WeChat Mini Program user while logging in. You can also pass these two parameters without passing them first, and then pass them to casdoor after the login is successful and accessToken is obtained:
+## Resources
 
-```js
-wx.getUserProfile({
-  desc: 'share your info to casdoor', 
-  success: (res) => {
-    this.setData({
-      userInfo: res.userInfo,
-      hasUserInfo: true
-    })
-    console.log(app.globalData.accessToken)
-    wx.request({
-      url: `${CASDOOR_HOSTNAME}/api/update-user`, // casdoor uri
-      method: "POST",
-      data: {
-        "owner": "test",
-        "name": "wechat-oGk3T5tIiMFo3SazCO75f0HEiE7Q",
-        "displayName": this.data.userInfo.nickName,
-        "avatar": this.data.userInfo.avatarUrl
-      },
-      header: {
-        "Authorization": "Bearer " + app.globalData.accessToken, // Bearer token
-        "content-type": "application/json"
-      },
-      success: (res) => {
-        console.log(res)
-      }
-    })
-  }
-})
-```
+- [Casdoor documentation](https://casdoor.ai/docs/overview)
+- [Casdoor: WeChat Mini Program](https://casdoor.ai/docs/integration/javascript/wechat_miniprogram/)
+- [WeChat Mini Program login](https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/login.html)
 
-Also, you can use accessToken as a bearer token for any Casdoor operation you want.
+## License
+
+[Apache-2.0](LICENSE)

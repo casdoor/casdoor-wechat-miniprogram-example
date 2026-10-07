@@ -20,6 +20,20 @@ const request = (config) => {
   });
 };
 
+const removeStorage = (key) => {
+  return new Promise((resolve, reject) => {
+    wx.removeStorage({
+      key: key,
+      success: () => {
+        resolve();
+      },
+      fail: error => {
+        reject(error);
+      }
+    });
+  });
+};
+
 const showMessage = (type, text, duration = 1500, mask = false) => {
   return new Promise((resolve, reject) => {
     wx.showToast({
@@ -39,14 +53,14 @@ const showMessage = (type, text, duration = 1500, mask = false) => {
 
 const handleError = (error) => {
   if (typeof (error) === "undefined") {
-    showMessage("none", "unkonwn error");
+    showMessage("none", "unknown error");
   } else if (typeof (error) === "string") {
     showMessage("none", error);
   } else if (typeof (error) === "object") {
     if (error.errMsg) {
       showMessage("none", error.errMsg);
     } else {
-      showMessage("none", error.toString());
+      showMessage("none", error.message || error.toString());
     }
   }
 };
@@ -102,5 +116,6 @@ module.exports = {
   handleError,
   setStorage,
   getStorage,
+  removeStorage,
   showLoading
 };

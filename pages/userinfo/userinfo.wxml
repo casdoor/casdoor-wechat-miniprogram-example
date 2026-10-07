@@ -53,14 +53,6 @@
         </view>
       </view>
       <view class="row">
-        <view class="item-left">
-          <label for="password">密码: </label>
-        </view>
-        <view class="item-right">
-          <input name="password" value="{{account.password}}" password="true" />
-        </view>
-      </view>
-      <view class="row">
         <button size="mini" form-type="submit">更新用户信息</button>
       </view>
       <view class="row">
